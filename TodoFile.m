@@ -1,4 +1,7 @@
 clear all, close all
+clc
+
+addpath('./src')
 
 %% Gather all the Todo steps of the project
 
@@ -79,7 +82,7 @@ B_reorder = B(new_order,:);
 [sys_x, sys_y, sys_z, sys_roll] = rocket.decompose(sys, xs, us);
 
 %% Todo 3.1
-
+addpath('./Deliverable_3_1')
 Ts = 1/20; % Sample time
 rocket = Rocket(Ts);
 [xs, us] = rocket.trim();
@@ -122,7 +125,7 @@ z = [0.1;0.2];
 % Get control input
 uz = mpc_z.get_u(z);
 
-Tf = 0.5;
+Tf = 4;
 z0 = [0;0.5];
 [T, Z_sub, U_sub] = rocket.simulate(sys_z, z0, Tf, @mpc_z.get_u, 0);
 ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
@@ -131,12 +134,12 @@ ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
 
 figure(4)
 mpc_roll = MPC_Control_roll(sys_roll, Ts, H);
-roll = [0.1;0.1];
+roll = [0;0.8];
 % Get control input
 uroll= mpc_roll.get_u(roll);
 
-Tf = 0.5;
-roll0 = [0;0.5];
+Tf = 5;
+roll0 = [0;0.8];
 [T, roll_sub, U_sub] = rocket.simulate(sys_roll, roll0, Tf, @mpc_roll.get_u, 0);
 ph = rocket.plotvis_sub(T, roll_sub, U_sub, sys_roll, xs, us);
 
@@ -156,14 +159,56 @@ H = 5; % Horizon length in seconds
 %% Todo 3.2: confirming good functioning of MPC_Control_x
 
 mpc_x = MPC_Control_x(sys_x, Ts, H);
-x = [0;0;0.1;0];
 x_ref = 1;
-% Get control input
-ux = mpc_x.get_u(x, x_ref);
+% x = [0;0;0.1;0.5];
+% 
+% % Get control input
+% ux = mpc_x.get_u(x, x_ref);
 
-Tf = 2;
+Tf = 10;
 x0 = [0;0;0;0.5];
 [T, X_sub, U_sub] = rocket.simulate(sys_x, x0, Tf, @mpc_x.get_u, x_ref);
 ph = rocket.plotvis_sub(T, X_sub, U_sub, sys_x, xs, us, x_ref);
+%% Todo 3.2: confirming good functioning of MPC_Control_y
 
+mpc_y = MPC_Control_y(sys_y, Ts, H);
+y_ref = 1;
+y = [0;0;0.1;0.5];
+
+% Get control input
+uy = mpc_y.get_u(y, y_ref);
+
+Tf = 10;
+y0 = [0;0;0;0.5];
+[T, Y_sub, U_sub] = rocket.simulate(sys_y, y0, Tf, @mpc_y.get_u, y_ref);
+ph = rocket.plotvis_sub(T, Y_sub, U_sub, sys_y, xs, us, y_ref);
+
+%% Todo 3.2: confirming good functioning of MPC_Control_z
+
+mpc_z = MPC_Control_z(sys_z, Ts, H);
+z_ref=1;
+
+z = [0;0];
+
+% Get control input
+uz = mpc_z.get_u(z,z_ref);
+
+Tf = 10;
+z0 = [0;0];
+[T, Z_sub, U_sub] = rocket.simulate(sys_z, z0, Tf, @mpc_z.get_u, z_ref);
+ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
+
+
+%% Todo 3.2: confirming good functioning of MPC_Control_roll
+
+mpc_roll = MPC_Control_roll(sys_roll, Ts, H);
+roll = [0;0.8];
+roll_ref = 0.5;
+% Get control input
+uroll= mpc_roll.get_u(roll, roll_ref);
+
+Tf = 5;
+roll0 = [0;0.8];
+[T, roll_sub, U_sub] = rocket.simulate(sys_roll, roll0, Tf, @mpc_roll.get_u, roll_ref);
+ph = rocket.plotvis_sub(T, roll_sub, U_sub, sys_roll, xs, us);
 

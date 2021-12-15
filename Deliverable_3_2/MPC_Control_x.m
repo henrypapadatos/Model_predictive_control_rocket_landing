@@ -39,17 +39,11 @@ classdef MPC_Control_x < MPC_Control
             alpha_lim = 0.0873;
             H = [0 1 0 0; 0 -1 0 0];
             h = [alpha_lim;alpha_lim];
-            % Add to the left side a term relative to the reference point
-            % we want to track
-            h_full = h - H*x_ref;
             
             % Define constraints for u (both with vectors and scalars)
             delta_lim = 0.26;
             M = [1;-1];
             m = [delta_lim;delta_lim];
-            % Add to the left side a term relative to the reference point
-            % we want to track
-            m_full = m - M*u_ref;
             
             % Compute the matrix for the terminal cost
             [~,P,~] = dlqr(mpc.A,mpc.B,Q,R);
@@ -57,21 +51,22 @@ classdef MPC_Control_x < MPC_Control
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
-            X(:,1) = X(:,1) - x_ref;
+            % change this, check serie
+            X(:,1) = X(:,1);
             
             for i=1:N-1
                 % Discrete Time model constraint
-                con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)];
+                con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))];
                 % Constraints on U
-                con = [con, M*U(:,i) <= m_full];
+                con = [con, M*U(:,i) <= m];
                 % Constraints on X
-                con = [con, H*X(:,i) <= h_full];
-                % Increment the objective function
-                obj = obj + X(:,i)'*Q*X(:,i) + U(:,i)'*R*U(:,i); 
+                con = [con, H*X(:,i) <= h];
+                % Increment the objective function: we want to minimize
+                % x-x_ref and u-u_ref
+                obj = obj + (X(:,i) - x_ref)'*Q*(X(:,i) - x_ref) + (U(:,i) - u_ref)'*R*(U(:,i) - u_ref); 
             end
-            
-            % Increment the objective function with the final cost
-            obj = obj + X(:,N)'*P*X(:,N);
+%           Increment the objective function with the final cost
+            obj = obj + (X(:,i) - x_ref)'*P*(X(:,i) - x_ref);
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,6 +74,7 @@ classdef MPC_Control_x < MPC_Control
             % Return YALMIP optimizer object
             ctrl_opti = optimizer(con, obj, sdpsettings('solver','gurobi'), ...
                 {X(:,1), x_ref, u_ref}, U(:,1));
+
         end
         
         % Design a YALMIP optimizer object that takes a position reference

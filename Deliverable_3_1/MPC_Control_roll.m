@@ -32,7 +32,7 @@ classdef MPC_Control_roll < MPC_Control
             %       the DISCRETE-TIME MODEL of your system
             
             % Define Q and R matrices 
-            Q = eye(nx);
+            Q = eye(nx) * 300;
             R = eye(nu);
             
             % Define U constraints for (both with vectors and scalars)
@@ -41,7 +41,7 @@ classdef MPC_Control_roll < MPC_Control
             m = [P_diff_lim;P_diff_lim];
             
             % Compute LQR invariant set and final cost
-            [K,P,e] = dlqr(mpc.A,mpc.B,Q,R);
+            [K,P,~] = dlqr(mpc.A,mpc.B,Q,R);
             K = -K;
             X_lqr = polytope(M*K, m);
             X_f = MaxInvariantSet(X_lqr,mpc.A + mpc.B*K);

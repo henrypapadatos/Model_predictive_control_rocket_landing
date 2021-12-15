@@ -44,7 +44,6 @@ classdef MPC_Control
                 ref_x = zeros(size(mpc.A,1),1);
                 ref_u = 0;
             end
-            
             % Compute the control action
             if length(struct(mpc.ctrl_opti).diminOrig) == 4
                 if length(x) == 3

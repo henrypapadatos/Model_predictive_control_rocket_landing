@@ -50,20 +50,21 @@ classdef MPC_Control_z < MPC_Control
             R = zeros(nu);
             
             % Define U constraints for (both with vectors and scalars)
-            P_avg_lim_low = 50;
-            P_avg_lim_high = 80;
+            us = 56.6667;
+            P_avg_lim_low = 50 - us;
+            P_avg_lim_high = 80 - us;
             M = [1;-1];
             m = [P_avg_lim_high;-P_avg_lim_low];
             disp(m)
             
             % Compute LQR invariant set and final cost
-            [~,P,~] = dlqr(mpc.A,mpc.B,Q,R);
-            % K = -K;
-            % X_lqr = polytope(M*K, m);
-            % X_f = MaxInvariantSet(X_lqr,mpc.A + mpc.B*K);
-            % [H_f, h_f] = double(X_f);
-            % Question to ask to TA
-            % X_lqr = Polyhedron([H; M*K],[h; m]);
+            [K,P,~] = dlqr(mpc.A,mpc.B,Q,R);
+            K = -K;
+            X_lqr = polytope(M*K, m);
+            X_f = MaxInvariantSet(X_lqr,mpc.A + mpc.B*K);
+            [H_f, h_f] = double(X_f);
+%             Question to ask to TA
+%             X_lqr = Polyhedron([H; M*K],[h; m]);
             
             % plot_invset(X_f,"Maximum invariant set for the 'sys z' system");
             
@@ -83,7 +84,7 @@ classdef MPC_Control_z < MPC_Control
             % Increment the objective function with the final cost
             obj = obj + X(:,N)'*P*X(:,N);
             % Terminal set constraints
-            % con = [con, H_f*X(:,N) <= h_f];
+            con = [con, H_f*X(:,N) <= h_f];
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
