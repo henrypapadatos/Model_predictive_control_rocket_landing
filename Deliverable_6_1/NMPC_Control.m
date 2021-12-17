@@ -18,7 +18,7 @@ ref_sym = opti.parameter(4, 1);   % target position
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
 
-f_discrete = @(x,u) RK4(x,u,rocket.Ts,rocket.f);
+f_discrete = @(x,u) RK4(x,u,rocket.Ts,@rocket.f);
 
 opti.minimize(sum((X_sym(10,:)-ref_sym(1)).^2) +...
     sum((X_sym(11,:)-ref_sym(2)).^2)+...
