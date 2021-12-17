@@ -74,7 +74,7 @@ classdef MPC_Control_z < MPC_Control
             
             for i=1:N-1
                 % Discrete Time model constraint
-                con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)+ d_est];
+                con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)+ mpc.B*d_est];
                 % Constraints on U
                 con = [con, M*U(:,i) <= m];
                 % Increment the objective function
@@ -125,9 +125,9 @@ classdef MPC_Control_z < MPC_Control
             % Implement these constraints
             obj = us'*us;
             % Steady state constraints
-            con = [mpc.A*xs + mpc.B*us == xs];
+            con = [mpc.A*xs + mpc.B*us + mpc.B*d_est == xs];
             % Reference constraints
-            con = [con, mpc.C*xs + mpc.D*us + d_est == ref];
+            con = [con, mpc.C*xs + mpc.D*us == ref];
             % Input constraints
             con = [con, M*us <= m];
             
@@ -153,19 +153,19 @@ classdef MPC_Control_z < MPC_Control
             [nx, nu] = size(mpc.B);
             ny   = size(mpc.C,1);
             
-            A_bar = [mpc.A     , zeros(nx,1);
+            A_bar = [mpc.A     , mpc.B;
                     zeros(1,nx),1           ];
             disp("size of A bar");
             disp(size(A_bar));
 
             B_bar = [mpc.B;zeros(1,nu)];
-            C_bar = [mpc.C,ones(ny,1)];
+            C_bar = [mpc.C,zeros(ny,1)];
             disp(A_bar);
             disp(B_bar);
             disp(C_bar);
             
             %how to define de poles?
-            L = -place(A_bar',C_bar',[0.3,0.4,0.5])';
+            L = -place(A_bar',C_bar',[0.4,0.3,0.5])';
             
 %             x_bar = [ x_hat; disturbance_hat ];
 %             
