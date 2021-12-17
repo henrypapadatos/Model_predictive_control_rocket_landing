@@ -66,7 +66,7 @@ classdef MPC_Control_z < MPC_Control
 %             Question to ask to TA
 %             X_lqr = Polyhedron([H; M*K],[h; m]);
             
-            % plot_invset(X_f,"Maximum invariant set for the 'sys z' system");
+            plot_invset(X_f,"Maximum invariant set for the 'sys z' system");
             
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;

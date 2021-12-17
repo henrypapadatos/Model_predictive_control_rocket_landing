@@ -82,6 +82,7 @@ B_reorder = B(new_order,:);
 [sys_x, sys_y, sys_z, sys_roll] = rocket.decompose(sys, xs, us);
 
 %% Todo 3.1
+rmpath("./Deliverable_3_2")
 addpath('./Deliverable_3_1')
 Ts = 1/20; % Sample time
 rocket = Rocket(Ts);
@@ -128,7 +129,7 @@ uz = mpc_z.get_u(z);
 Tf = 4;
 z0 = [0;0.5];
 [T, Z_sub, U_sub] = rocket.simulate(sys_z, z0, Tf, @mpc_z.get_u, 0);
-ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
+% ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
 
 %% Todo 3.1: confirming good functioning of MPC_Control_roll
 
@@ -165,10 +166,11 @@ x_ref = 1;
 % % Get control input
 % ux = mpc_x.get_u(x, x_ref);
 
-Tf = 10;
+Tf = 5;
 x0 = [0;0;0;0.5];
 [T, X_sub, U_sub] = rocket.simulate(sys_x, x0, Tf, @mpc_x.get_u, x_ref);
-ph = rocket.plotvis_sub(T, X_sub, U_sub, sys_x, xs, us, x_ref);
+% ph = rocket.plotvis_sub(T, X_sub, U_sub, sys_x, xs, us, x_ref);
+plot(T,X_sub(4,:));
 %% Todo 3.2: confirming good functioning of MPC_Control_y
 
 mpc_y = MPC_Control_y(sys_y, Ts, H);
@@ -196,8 +198,10 @@ uz = mpc_z.get_u(z,z_ref);
 Tf = 10;
 z0 = [0;0];
 [T, Z_sub, U_sub] = rocket.simulate(sys_z, z0, Tf, @mpc_z.get_u, z_ref);
-ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
-
+% ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
+figure();
+plot(T,Z_sub(2,:));
+title('z subsystem');
 
 %% Todo 3.2: confirming good functioning of MPC_Control_roll
 
@@ -210,8 +214,10 @@ uroll= mpc_roll.get_u(roll, roll_ref);
 Tf = 5;
 roll0 = [0;0.8];
 [T, roll_sub, U_sub] = rocket.simulate(sys_roll, roll0, Tf, @mpc_roll.get_u, roll_ref);
-ph = rocket.plotvis_sub(T, roll_sub, U_sub, sys_roll, xs, us);
-
+% ph = rocket.plotvis_sub(T, roll_sub, U_sub, sys_roll, xs, us);
+figure();
+plot(T,roll_sub(2,:));
+title('roll subsystem');
 %% Todo 4
 rmpath("Deliverable_3_1")
 addpath("Deliverable_3_2")
