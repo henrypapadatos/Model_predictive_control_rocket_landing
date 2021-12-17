@@ -113,7 +113,7 @@ y = [0;0;0.1;0.5];
 % Get control input
 uy = mpc_y.get_u(y);
 
-Tf = 5;
+Tf = 0.5;
 y0 = [0;0;0;0.5];
 [T, Y_sub, U_sub] = rocket.simulate(sys_y, y0, Tf, @mpc_y.get_u, 0);
 ph = rocket.plotvis_sub(T, Y_sub, U_sub, sys_y, xs, us);
@@ -160,48 +160,48 @@ H = 5; % Horizon length in seconds
 %% Todo 3.2: confirming good functioning of MPC_Control_x
 
 mpc_x = MPC_Control_x(sys_x, Ts, H);
-x_ref = -5;
+x_ref = 1;
 % x = [0;0;0.1;0.5];
 % 
 % % Get control input
 % ux = mpc_x.get_u(x, x_ref);
 
 Tf = 5;
-x0 = [0;0;0;0];
+x0 = [0;0;0;0.5];
 [T, X_sub, U_sub] = rocket.simulate(sys_x, x0, Tf, @mpc_x.get_u, x_ref);
-ph = rocket.plotvis_sub(T, X_sub, U_sub, sys_x, xs, us, x_ref);
-% plot(T,X_sub(4,:));
+% ph = rocket.plotvis_sub(T, X_sub, U_sub, sys_x, xs, us, x_ref);
+plot(T,X_sub(4,:));
 %% Todo 3.2: confirming good functioning of MPC_Control_y
 
 mpc_y = MPC_Control_y(sys_y, Ts, H);
-y_ref = 5;
+y_ref = 1;
 y = [0;0;0.1;0.5];
 
 % Get control input
 uy = mpc_y.get_u(y, y_ref);
 
-Tf = 5;
-y0 = [0;0;0;0];
+Tf = 10;
+y0 = [0;0;0;0.5];
 [T, Y_sub, U_sub] = rocket.simulate(sys_y, y0, Tf, @mpc_y.get_u, y_ref);
 ph = rocket.plotvis_sub(T, Y_sub, U_sub, sys_y, xs, us, y_ref);
 
 %% Todo 3.2: confirming good functioning of MPC_Control_z
 
 mpc_z = MPC_Control_z(sys_z, Ts, H);
-z_ref= 5;
+z_ref=1;
 
 z = [0;0];
 
 % Get control input
 uz = mpc_z.get_u(z,z_ref);
 
-Tf = 5;
+Tf = 10;
 z0 = [0;0];
 [T, Z_sub, U_sub] = rocket.simulate(sys_z, z0, Tf, @mpc_z.get_u, z_ref);
-ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
-% figure();
-% plot(T,Z_sub(2,:));
-% title('z subsystem');
+% ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
+figure();
+plot(T,Z_sub(2,:));
+title('z subsystem');
 
 %% Todo 3.2: confirming good functioning of MPC_Control_roll
 
@@ -214,15 +214,15 @@ uroll= mpc_roll.get_u(roll, roll_ref);
 Tf = 5;
 roll0 = [0;0.8];
 [T, roll_sub, U_sub] = rocket.simulate(sys_roll, roll0, Tf, @mpc_roll.get_u, roll_ref);
-ph = rocket.plotvis_sub(T, roll_sub, U_sub, sys_roll, xs, us);
-% figure();
-% plot(T,roll_sub(2,:));
-% title('roll subsystem');
+% ph = rocket.plotvis_sub(T, roll_sub, U_sub, sys_roll, xs, us);
+figure();
+plot(T,roll_sub(2,:));
+title('roll subsystem');
 %% Todo 4
 rmpath("Deliverable_3_1")
 addpath("Deliverable_3_2")
 
-Ts = 1/40; % Sample time
+Ts = 1/20; % Sample time
 rocket = Rocket(Ts);
 [xs, us] = rocket.trim();
 sys = rocket.linearize(xs, us);
@@ -246,10 +246,13 @@ x0 = zeros(12,1);
 %rocket.mass = 1.783;
 [T, X, U, Ref] = rocket.simulate_f(x0, Tf, mpc, ref);
 % Plot pose
-rocket.anim_rate = 2; % Increase this to make the animation faster
+rocket.anim_rate = 1; % Increase this to make the animation faster
                       % anim rate = 4 is about right for printing in the report
 ph = rocket.plotvis(T, X, U, Ref);
+<<<<<<< HEAD
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
+=======
+ph.fig.Name = 'Nonlin. sim' % Set a figure title
 %%
 %%TO DO 5
 rmpath("Deliverable_3_2")
@@ -265,25 +268,24 @@ H = 5; % Horizon length in seconds
 
 mpc_z = MPC_Control_z(sys_z, Ts, H);
 
-mpc = rocket.merge_lin_controllers(xs, us, mpc_x, mpc_y, mpc_z, mpc_roll);
-
 rocket.mass = 1.783; % Manipulate mass for simulation
-% Setup reference function
-Tf = 30;
-ref = @(t_, x_) rocket.MPC_ref(t_, Tf);
-% ref = @(t_, x_) [0;0;t_;0];
-x0 = zeros(12,1);
-%rocket.mass = 1.783;
-% [T, X, U, Ref] = rocket.simulate_f(x0, Tf, mpc, ref);
-[T, X, U, Ref, Z_hat] = rocket.simulate_f_est_z(x0, Tf, mpc,ref,mpc_z, sys_z);
+z_ref=1;
+z = [0;0];
+
+% Get control input
+uz = mpc_z.get_u(z,z_ref);
+
+Tf = 10;
+z0 = [0;0];
+rocket.mass = 1.783; % Manipulate mass for simulation
 %[T, Z_sub, U_sub] = rocket.simulate(sys_z, z0, Tf, @mpc_z.get_u, z_ref);
 %[T, X, U, Ref] = rocket.simulate_f(z0, Tf, mpc_z, z_ref);
 
 %% part 6
-addpath('Deliverable_6_1');
+addpath
 Ts = 1/10; % Note that we choose a larger Ts here to speed up the simulation
 rocket = Rocket(Ts);
-H = 5;
+H = ???
 nmpc = NMPC_Control(rocket, H);
 % MPC reference with default maximum roll = 15 deg
 Tf = 30;
@@ -294,7 +296,3 @@ ref = @(t_, x_) rocket.MPC_ref(t_, Tf, roll_max);
 [T, X, U, Ref] = rocket.simulate_f(x0, Tf, nmpc, ref);
 
 
-rocket.anim_rate = 1; % Increase this to make the animation faster
-                      % anim rate = 4 is about right for printing in the report
-ph = rocket.plotvis(T, X, U, Ref);
-ph.fig.Name = 'Nonlin. sim'; % Set a figure title
