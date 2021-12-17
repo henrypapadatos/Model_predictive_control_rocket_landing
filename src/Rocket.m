@@ -706,7 +706,7 @@ classdef Rocket
             nxu = 12 + 4;
             nColVis = 2; % Number of columns for pose visualization
             
-            ph.fig = figure('Position', [2000, 925, 1400, 730]);
+            ph.fig = figure('Position', [94.5000,194.5000, 1400, 730]);
             nrow = 5;
             ncol = 3 + nColVis;
             
@@ -780,7 +780,7 @@ classdef Rocket
             nxu = size(subX, 1) + size(subU, 1);
             nColVis = 1; % Number of columns for pose visualization
             
-            ph.fig = figure('Position', [2000, 925, 1120, 420]);
+            ph.fig = figure('Position', [94.5000, 194.5000, 1120, 420]);
             nrow = nxu;
             ncol = 1 + nColVis;
             
