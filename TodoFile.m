@@ -242,5 +242,5 @@ x0 = zeros(12,1);
 rocket.anim_rate = 1; % Increase this to make the animation faster
                       % anim rate = 4 is about right for printing in the report
 ph = rocket.plotvis(T, X, U, Ref);
-ph.fig.Name = 'Nonlin. sim' % Set a figure title
+ph.fig.Name = 'Nonlin. sim'; % Set a figure title
 

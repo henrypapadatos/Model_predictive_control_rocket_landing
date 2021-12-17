@@ -63,13 +63,17 @@ classdef Rocket
         function obj = Rocket(Ts)
             
             obj.Ts = Ts;
-           
-            try % Test installation
-                import casadi.*
-                casadi.SX.sym('x'); % Test casadi
-                sdpvar(2,1);        % Test
+            
+            try % Test YALMIP installation
+                sdpvar(2,1);
             catch
-                error('Could not load casadi or yalmip - check that it is installed properly and on the path')
+                error('Could not load YALMIP - check that it is installed properly and on the path.')
+            end
+            try % Test casadi installation
+                import casadi.*
+                casadi.SX.sym('x');
+            catch
+                error('Could not load casadi - check that it is installed properly and on the path.')
             end
             
             % Define system state, input, output names and inputs
@@ -120,6 +124,9 @@ classdef Rocket
             % Decompose state
             [w, phi, v, ~] = obj.parse_state(x);
             
+            % Get transformation from body to world frame
+            Twb = obj.eul2mat(phi);
+
             % Get force and moment in body frame from (differential) thrust
             [b_F, b_M] = obj.getForceAndMomentFromThrust(u);
             
@@ -127,17 +134,18 @@ classdef Rocket
             % Angular velocity in body frame
             w_dot = obj.inv_J * (b_M - cross(w, obj.J * w));
             
-            % Attitude angles
-            alph = phi(1); bet = phi(2);
-            E = [...
-                1,  sin(alph)*tan(bet), -cos(alph)*tan(bet);
-                0,           cos(alph),           sin(alph);
-                0, -sin(alph)/cos(bet),  cos(alph)/cos(bet) ];
-            phi_dot = E * w;
+            % Attitude angles. Angular velocities in body frame -> rate of
+            % change of Euler angles
+            bet = phi(2); gam = phi(3);
             
-            % Linear velocity and position in world frame
-            Twb = obj.eul2mat(phi); % Transformation from body to world frame
+            E_inv  = 1/cos(bet) * ...
+                [cos(gam),         -sin(gam),          0;
+                sin(gam)*cos(bet), cos(gam)*cos(bet),  0;
+                -cos(gam)*sin(bet), sin(gam)*sin(bet), cos(bet)];
             
+            phi_dot = E_inv * w;
+            
+            % Linear velocity and position in world frame   
             v_dot = Twb * b_F/obj.mass - [0; 0; obj.g];
             p_dot = v;
             
@@ -184,8 +192,12 @@ classdef Rocket
             objective_fcn = @(y) MSE( obj.f(y(1:12), y(13:16)) );
             
             % Set bounds and initial guess
-            uby = [ Inf(12,1); obj.ubu(:)];
-            lby = [-Inf(12,1); obj.lbu(:)];
+            ubx_ = [Inf Inf Inf, deg2rad([180 89 180]), Inf Inf Inf, Inf Inf Inf]';
+            lbx_ = -ubx_;
+            
+            uby = [ubx_; obj.ubu(:)];
+            lby = [lbx_; obj.lbu(:)];
+            
             y_guess = zeros(16,1);
             
             % Setup solver
@@ -486,6 +498,8 @@ classdef Rocket
                 % Simulate closed-loop using control law
                 fprintf(['  > Simulating ' model_text ' model ' estimator_text ...
                     'in ' loop_text '-loop to Tf = ' num2str(Tf) ':  ( ']); tic;
+                
+                sim_success = true;
                 for iStep = 1:nSteps
                     % Print simulation time
                     if mod(T(iStep), 2) == 0, fprintf([num2str(T(iStep)) ' ']); end
@@ -493,8 +507,13 @@ classdef Rocket
                     % Compute reference ref from time t and state estimate x_hat
                     Ref(:,iStep) = ref_fcn( T(iStep), Z_hat(1:nx,iStep) );
                     % Compute input from augmented state estimate z_hat and reference ref
-                    U(:, iStep) = ctrl_fcn( Z_hat(:,iStep), Ref(:,iStep) );
-                    
+                    u = ctrl_fcn( Z_hat(:,iStep), Ref(:,iStep) );
+                    U(:, iStep) = u;
+                    if any(isnan(u))
+                        sim_success = false;
+                        break;
+                    end
+                        
                     % Simulate next true state from true state and input
                     X(:, iStep+1) = sim_step( X(:,iStep), U(:,iStep) );
                     
@@ -503,7 +522,20 @@ classdef Rocket
                     
                 end
                 if mod(T(iStep), 2) ~= 0, fprintf([num2str(T(iStep)) ' ']); end
-                fprintf(')  Done (%.2fs)\n', toc);
+                
+                if sim_success
+                    fprintf(')  Done (%.2fs)\n', toc);
+                else
+                    T = T(:,1:iStep);
+                    X = X(:,1:iStep+1);
+                    U = U(:,1:iStep);
+                    Ref = Ref(:,1:iStep);
+                    Z_hat = Z_hat(:,1:iStep+1);
+                    fprintf(')  Abort (%.2fs)\n', toc);
+                    fprintf('Problem when computing control from x = [');
+                    fprintf(' %g', X(:,iStep));
+                    fprintf(' ]\n');
+                end
                 
                 % Remove last state for consistent size with U
                 Z_hat(:,end) = [];
@@ -580,7 +612,7 @@ classdef Rocket
         % Visualize the trajectory (without plots)
         %
         function ph = vis(obj, T, X, U, ax)
-                      
+            
             if nargin < 5
                 % If no plot handles are provided, create new plot
                 ph = obj.create_pose_axes();
@@ -590,20 +622,23 @@ classdef Rocket
             ax = ph.ax_pose;
             %cla(ax);
             
-            dt = T(2) - T(1);
+            sim_dt = T(2) - T(1);
             nT = length(T);
             
             if size(U, 2) < 2
                 % If U is a vector, replicate it to match state trajectory
                 U = repmat(U, 1, nT);
             end
-
+            
             if obj.anim_rate > 0
                 % Animate trajectory
                 fprintf('  > Visualizing (%.1fx) ... ', obj.anim_rate);
-                fps = 20;
-                ref_dt = 1/fps;
-                iStep = ceil(obj.anim_rate * ref_dt / dt);
+                
+                fps_max = 20; % Max frames per second to display
+                vis_dt_ref = max(1/fps_max, sim_dt/obj.anim_rate);
+                iStep = ceil(vis_dt_ref / (sim_dt/obj.anim_rate));
+                vis_dt = iStep * sim_dt/obj.anim_rate;
+                
                 % Create rocket object
                 [ph_rocket, ph_thrust] = obj.create_rocket_transformobj(ax);
                 
@@ -618,7 +653,7 @@ classdef Rocket
                     obj.visualize_point( X(:,iT), U(:,iT), ax, ph_rocket, ph_thrust );
                     % Pause by remaining time after ploting point
                     time_lapsed = toc;
-                    pausetime = ref_dt - time_lapsed;
+                    pausetime = vis_dt - time_lapsed;
                     pause(pausetime);
                 end
                 fprintf('Done\n')
@@ -628,8 +663,8 @@ classdef Rocket
                 obj.visualize_pos(pos, ax);
                 
                 % Plot pose at discrete points in time (in any case initial and final state)
-                fps = 1.1;    % (Min) number of single plots per second
-                iStep = floor(1/(fps * dt));
+                snapshots_per_sim_sec = 1.1;    % (Min) number of snapshots per simulation second
+                iStep = floor(1/(snapshots_per_sim_sec * sim_dt));
                 iStart = mod(nT, iStep);
                 if iStart == 0, iStart = iStep; end
                 
@@ -647,7 +682,7 @@ classdef Rocket
         % Plot & visualize full trajectory
         %
         function ph = plotvis(obj, T, X, U, Ref)
-           
+            
             X_ref = nan(size(X));
             if nargin >= 5
                 if size(Ref, 2) == 1
@@ -911,10 +946,10 @@ classdef Rocket
         %
         function visualize_pos(obj, pos, ax)
             plot3(ax, pos(1,:), pos(2,:), pos(3,:), '.', ...
-                'Color', obj.color.meas, ... 
+                'Color', obj.color.meas, ...
                 'MarkerSize', 10);
         end
-
+        
         %
         % Visualize the rocket at a given state and input
         %
@@ -942,8 +977,8 @@ classdef Rocket
             [~, phi, ~, pos] = obj.parse_state(x);
             
             % Rotation from body to interial frame
-            Tib = obj.eul2mat(phi);
-            h_rocket.Matrix(1:3, :) = [Tib, pos];
+            Twb = obj.eul2mat(phi);
+            h_rocket.Matrix(1:3, :) = [Twb, pos];
             
             % Plot thrust vector ------------------------------------------
             thrust_max = 29.43; % = obj.g * obj.thrust_coeff' * [100^2; 100; 1];
@@ -971,7 +1006,7 @@ classdef Rocket
             
             % Plot center of gravity trace --------------------------------
             plot3(ax, pos(1), pos(2), pos(3), '.', ...
-                'Color', obj.color.meas, ... 
+                'Color', obj.color.meas, ...
                 'MarkerSize', 10);
         end
         
@@ -1045,16 +1080,54 @@ classdef Rocket
         %
         % Obtain transformation matrix from attitude angles
         %
-        function T = eul2mat(eul)
-            alp = eul(1); % <a>lpha
-            bet = eul(2); % <b>eta
-            gam = eul(3); % <g>amma
+        function Twb = eul2mat(eul)
+            alp = eul(1); % alpha
+            bet = eul(2); % beta
+            gam = eul(3); % gamma
             
-            % T = T3(gamma) * T2(beta) * T1(alpha) %TODO
-            T = [1 0 0; 0 cos(alp) -sin(alp); 0 sin(alp) cos(alp)] * ...
-                [cos(bet) 0 sin(bet); 0 1 0; -sin(bet) 0 cos(bet)] * ...
-                [cos(gam) -sin(gam) 0; sin(gam) cos(gam) 0; 0 0 1];
+            % T1 is elementary rotation about x axis
+            function T = T1(a)
+                T = [1 0 0;
+                    0 cos(a) sin(a);
+                    0 -sin(a) cos(a)];
+            end
+            % T2 is elementary rotation about y axis
+            function T = T2(a)
+                T = [cos(a) 0 -sin(a);
+                    0 1 0;
+                    sin(a) 0 cos(a)];
+            end
+            % T3 is elementary rotation about z axis
+            function T = T3(a)
+                T = [cos(a) sin(a) 0;
+                    -sin(a) cos(a) 0;
+                    0 0 1];
+            end
+            % %             % Detailed derivation
+            % %
+            % %             % Going from world to body frame:
+            % %             % 1. Rotate by alpha about world x axis:
+            % %             T_bw1 = T1(alp);
+            % %             % 2. Rotate by beta about resulting y axis;
+            % %             T_bw2 = T2(bet) * T_bw1;
+            % %             % 3. Rotate by gamma about resluting z axis;
+            % %             T_bw = T3(gam) * T_bw2;
+            % %
+            % %             % In one step:
+            % %             T_bw = T3(gam) * T2(bet) * T1(alp);
+            % %
+            % %             % T_bw transforms a w_vect in body frame (b_vect):
+            % %             % b_vect = T_bw * w_vect
+            % %             % We need the opposite, so we transpose the matrix:
+            % %             T_wb = T_bw';
+            % %
+            % %             % Alternatively, we can directly construct this matrix by going
+            % %             % backwards from body to world frame (same logic, inverse
+            % %             % angles):
+            Twb = T1(-alp) * T2(-bet) * T3(-gam);
         end
+        
+        
         
         %
         % Create pose axes (3D, equal, hold, grid, labels)
@@ -1113,14 +1186,24 @@ classdef Rocket
         %
         % Trace out an MPC in ref_time seconds
         %
-        function [Ref4D, Ref2D] = MPC_ref(t, ref_time)
+        function Ref4 = MPC_ref(t, ref_time, roll_max, tilt)
             
+            if nargin < 3
+                roll_max = deg2rad(15);
+            end
+                
+            if nargin < 4
+                tilt = true;
+            end
+                
             % Coordinates (x, y, heading)
             coords = [ ...
                 0 0  45; 0 2  45; 1 1  45; 2 2  45; 2 0 -90;          % 'M'
                 3 0 -90; 3 2 -90; 4 2 -90; 4 1 -90; 3 1 -90; 3 0 -90; % 'P'
-                7 0 180; 5 0 90; 5 2 45; 7 2 0];                      % 'C'
+                7 0 0; 5 0 90; 5 2 45; 7 2 0];                        % 'C'
             coords(:,1:2) = coords(:,1:2) / 2;
+            coords(:,3) = coords(:,3) * rad2deg(roll_max)/90;
+            
             nCoords = size(coords, 1);
             
             % Break the path into legs, compute their end times such that
@@ -1135,12 +1218,19 @@ classdef Rocket
             target_id = min(nCoords, target_id);
             
             % Return target coordinates for each time point
-            XY = coords(target_id,1:2); % 2D XY
-            Ref2D = XY;
-            
+            XZ = coords(target_id,1:2);
             Roll = deg2rad(coords(target_id,3));
-            %Ref4D = [XY(:,1), XY(:,2), zeros(size(XY,1), 1), Roll]; % 4D X Y 0 roll
-            Ref4D = [XY(:,1), zeros(size(XY,1), 1), XY(:,2), Roll]; % 4D X 0 Z roll
+            Ref4 = [XZ(:,1), 0, XZ(:,2), Roll]; % 4D X 0 Z roll
+            
+            % Rotate about x axis
+            if tilt
+                alpha = deg2rad(20);
+                XZ = ([cos(alpha) -sin(alpha); sin(alpha) cos(alpha)] * XZ')';
+                
+                % Rotate about z axis
+                gamma = deg2rad(-30);
+                Ref4 = [cos(gamma) * XZ(:,1), sin(gamma) * XZ(:,1), XZ(:,2), Roll]; % 4D X 0 Z roll
+            end
         end
     end
     
