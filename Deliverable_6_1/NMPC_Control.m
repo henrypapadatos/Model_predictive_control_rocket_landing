@@ -15,32 +15,45 @@ U_sym = opti.variable(nu, N-1);   % control trajectory)
 x0_sym  = opti.parameter(nx, 1);  % initial state
 ref_sym = opti.parameter(4, 1);   % target position
 
+% Slack variables 
+%epsilon_beta_1 = opti.variable(1,N);
+%epsilon_beta_2 = opti.variable(1,N);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
 
 f_discrete = @(x,u) RK4(x,u,rocket.Ts,@rocket.f);
 
-opti.minimize(sum((X_sym(10,:)-ref_sym(1)).^2) +...
-    sum((X_sym(11,:)-ref_sym(2)).^2)+...
-    sum((X_sym(12,:)-ref_sym(3)).^2)+...
-    sum((X_sym(6,:)-ref_sym(4))).^2);
+opti.minimize(...
+    40*sum((X_sym(10,:)-ref_sym(1)).^2) +... % Track x reference
+    40*sum((X_sym(11,:)-ref_sym(2)).^2) +... % Track y reference
+    5*sum((X_sym(12,:)-ref_sym(3)).^2) +... % Track z reference
+    5*sum((X_sym(6,:)-ref_sym(4)).^2) +... % Track roll reference
+    30*sum(X_sym(1,:).^2) +... % Minimize angular velocity about x
+    450*sum(X_sym(2,:).^2) +... % Minimize angular velocity about y
+    sum(X_sym(7,:).^2) +... % Minimize velocity along x
+    sum(X_sym(8,:).^2) +... % Minimize velocity along y
+    sum(X_sym(9,:).^2) +... % Minimize velocity along z
+    0.005*sum((U_sym(3,:) - 54).^2) + ... % Minimize the energy used 
+    0.05*sum(U_sym(4,:).^2)... % Minimize P_diff
+    );
+
+%    epsilon_beta_1*epsilon_beta_1' + sum(epsilon_beta_1) +... % Slack constraints
+%    epsilon_beta_2*epsilon_beta_2' + sum(epsilon_beta_2));
 
 
 for k=1:N-1 % loop over control intervals
-    rocket.f(X_sym(:,k), U_sym(:,k));
-   opti.subject_to(X_sym(:,k+1) == f_discrete(X_sym(:,k), U_sym(:,k)));
-%     opti.subject_to(X_sym(:,k+1) == RK4(X_sym(:,k), U_sym(:,k),rocket.Ts,rocket.f));
-
+    opti.subject_to(X_sym(:,k+1) == f_discrete(X_sym(:,k), U_sym(:,k)));
 end
 
 %input constraints
-opti.subject_to(-0.26<=U_sym(1)<0.26);
-opti.subject_to(-0.26<=U_sym(2)<0.26);
-opti.subject_to(50<=U_sym(3)<=80);
-opti.subject_to(-20<=U_sym(4)<=20);
+opti.subject_to(-0.26 <= U_sym(1) <= 0.26);
+opti.subject_to(-0.26 <= U_sym(2) <= 0.26);
+opti.subject_to(50 <= U_sym(3) <= 80);
+opti.subject_to(-20 <= U_sym(4) <= 20);
 
 %state constraints
-opti.subject_to(-deg2rad(85)<=X_sym(5)<=deg2rad(85));
+opti.subject_to(-deg2rad(85) <= X_sym(5) <= deg2rad(85));
 
 %initialize state
 opti.subject_to(X_sym(:,1) == x0_sym);
