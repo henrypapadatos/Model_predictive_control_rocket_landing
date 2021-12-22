@@ -25,15 +25,16 @@ ref_sym = opti.parameter(4, 1);   % target position
 f_discrete = @(x,u) RK4(x,u,rocket.Ts,@rocket.f);
 
 opti.minimize(...
-    40*sum((X_sym(10,:)-ref_sym(1)).^2) +... % Track x reference
-    40*sum((X_sym(11,:)-ref_sym(2)).^2) +... % Track y reference
-    5*sum((X_sym(12,:)-ref_sym(3)).^2) +... % Track z reference
+    10*sum((X_sym(10,:)-ref_sym(1)).^2) +... % Track x reference
+    10*sum((X_sym(11,:)-ref_sym(2)).^2) +... % Track y reference
+    10*sum((X_sym(12,:)-ref_sym(3)).^2) +... % Track z reference
     5*sum((X_sym(6,:)-ref_sym(4)).^2) +... % Track roll reference
     30*sum(X_sym(1,:).^2) +... % Minimize angular velocity about x
-    450*sum(X_sym(2,:).^2) +... % Minimize angular velocity about y
-    sum(X_sym(7,:).^2) +... % Minimize velocity along x
-    sum(X_sym(8,:).^2) +... % Minimize velocity along y
-    sum(X_sym(9,:).^2) +... % Minimize velocity along z
+    300*sum(X_sym(2,:).^2) +... % Minimize angular velocity about y
+    0*sum(X_sym(3,:).^2) +... % Minimize angular velocity about z
+    0*sum(X_sym(7,:).^2) +... % Minimize velocity along x
+    0*sum(X_sym(8,:).^2) +... % Minimize velocity along y
+    0*sum(X_sym(9,:).^2) +... % Minimize velocity along z
     0.005*sum((U_sym(3,:) - 54).^2) + ... % Minimize the energy used 
     0.05*sum(U_sym(4,:).^2)... % Minimize P_diff
     );
