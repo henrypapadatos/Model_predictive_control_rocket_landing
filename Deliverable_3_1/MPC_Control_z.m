@@ -45,17 +45,18 @@ classdef MPC_Control_z < MPC_Control
             % NOTE: The matrices mpc.A, mpc.B, mpc.C and mpc.D are
             %       the DISCRETE-TIME MODEL of your system
             
+            % Hardcode the value we want to track for Pavg (steady state value)
+            us = 56.6667;
+            
             % Define Q and R matrices 
             Q = eye(nx);
-            R = zeros(nu);
+            R = 0.05*eye(nu);
             
-            % Define U constraints for (both with vectors and scalars)
-            us = 56.6667;
+            % Define constraints for u 
             P_avg_lim_low = 50 - us;
             P_avg_lim_high = 80 - us;
             M = [1;-1];
             m = [P_avg_lim_high;-P_avg_lim_low];
-            disp(m)
             
             % Compute LQR invariant set and final cost
             [K,P,~] = dlqr(mpc.A,mpc.B,Q,R);
@@ -63,10 +64,12 @@ classdef MPC_Control_z < MPC_Control
             X_lqr = polytope(M*K, m);
             X_f = MaxInvariantSet(X_lqr,mpc.A + mpc.B*K);
             [H_f, h_f] = double(X_f);
-%             Question to ask to TA
-%             X_lqr = Polyhedron([H; M*K],[h; m]);
             
-            plot_invset(X_f,"Maximum invariant set for the 'sys z' system");
+            % Plot the invariant set
+            plot_invset(X_f,...
+            ["vz","z"],...
+            "LQR maximum invariant set for the 'sys z' system",...
+            "Graphs/sys_z_invset.svg");
             
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;

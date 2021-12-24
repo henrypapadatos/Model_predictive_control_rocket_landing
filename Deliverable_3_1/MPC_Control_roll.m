@@ -32,7 +32,7 @@ classdef MPC_Control_roll < MPC_Control
             %       the DISCRETE-TIME MODEL of your system
             
             % Define Q and R matrices 
-            Q = eye(nx) * 300;
+            Q = 100*eye(nx);
             R = eye(nu);
             
             % Define U constraints for (both with vectors and scalars)
@@ -46,10 +46,12 @@ classdef MPC_Control_roll < MPC_Control
             X_lqr = polytope(M*K, m);
             X_f = MaxInvariantSet(X_lqr,mpc.A + mpc.B*K);
             [H_f, h_f] = double(X_f);
-            % Question to ask to TA
-            % X_lqr = Polyhedron([H; M*K],[h; m]);
             
-            plot_invset(X_f,"Maximum invariant set for the 'sys roll' system");
+            % Plot the invariant set
+            plot_invset(X_f,...
+            ["wz","roll"],...
+            "LQR maximum invariant set for the 'sys roll' system",...
+            "Graphs/sys_roll_invset.svg");
             
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;

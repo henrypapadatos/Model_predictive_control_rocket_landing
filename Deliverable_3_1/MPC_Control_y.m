@@ -33,7 +33,8 @@ classdef MPC_Control_y < MPC_Control
             
             % Define Q and R matrices 
             Q = eye(nx);
-            R = eye(nu);
+            Q(1,1) = 60;
+            R = 0.1*eye(nu);
             
             % Define constraints for x (both with vectors and scalars)
             alpha_lim = 0.0873;
@@ -46,15 +47,17 @@ classdef MPC_Control_y < MPC_Control
             m = [delta_lim;delta_lim];
             
             % Compute LQR invariant set and final cost
-            [K,P,e] = dlqr(mpc.A,mpc.B,Q,R);
+            [K,P,~] = dlqr(mpc.A,mpc.B,Q,R);
             K = -K;
             X_lqr = polytope([H; M*K],[h; m]);
             X_f = MaxInvariantSet(X_lqr,mpc.A + mpc.B*K);
             [H_f, h_f] = double(X_f);
-            % Question to ask to TA
-            % X_lqr = Polyhedron([H; M*K],[h; m]);
             
-            plot_invset(X_f,"Maximum invariant set for the 'sys y' system");
+            % Plot the invariant set
+            plot_invset(X_f,...
+            ["wx","alpha","vy","y"],...
+            "LQR maximum invariant set for the 'sys y' system",...
+            "Graphs/sys_y_invset.svg");
             
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;

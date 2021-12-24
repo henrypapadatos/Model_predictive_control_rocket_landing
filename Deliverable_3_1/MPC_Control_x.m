@@ -33,14 +33,15 @@ classdef MPC_Control_x < MPC_Control
             
             % Define Q and R matrices 
             Q = eye(nx);
-            R = eye(nu);
+            Q(1,1) = 80;
+            R = 0.1*eye(nu);
             
-            % Define constraints for x (both with vectors and scalars)
+            % Define constraints for x
             beta_lim = 0.0873;
             H = [0 1 0 0; 0 -1 0 0];
             h = [beta_lim;beta_lim];
             
-            % Define for constraints for (both with vectors and scalars)
+            % Define constraints for u
             delta_lim = 0.26;
             M = [1;-1];
             m = [delta_lim;delta_lim];
@@ -51,10 +52,12 @@ classdef MPC_Control_x < MPC_Control
             X_lqr = polytope([H; M*K],[h; m]);
             X_f = MaxInvariantSet(X_lqr,mpc.A + mpc.B*K);
             [H_f, h_f] = double(X_f);
-            % Question to ask to TA
-            % X_lqr = Polyhedron([H; M*K],[h; m]);
             
-            plot_invset(X_f,"Maximum invariant set for the 'sys z' system");
+            % Plot invariant set
+            plot_invset(X_f,...
+            ["wy","beta","vx","x"],...
+            "LQR maximum invariant set for the 'sys x' system",...
+            "Graphs/sys_x_invset.svg");
             
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;

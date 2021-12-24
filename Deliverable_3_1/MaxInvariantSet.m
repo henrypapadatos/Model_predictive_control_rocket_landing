@@ -13,13 +13,15 @@ O_inf = X;
 while 1
 	Oprev = O_inf;
 	[F,f] = double(O_inf);	
-    disp(size(F))
 	% Compute the pre-set
 	O_inf = polytope([F;F*A],[f;f]);
     if O_inf == Oprev 
         break; 
     end
-	fprintf('Iteration %i... not yet equal\n', i)
+    if rem(i,10) == 0
+        % Friendly message
+        fprintf('Iteration %i... not yet equal\n', i)
+    end
 	i = i + 1;
 end
 
