@@ -32,8 +32,8 @@ classdef MPC_Control_roll < MPC_Control
             %       the DISCRETE-TIME MODEL of your system
             
             % Define Q and R matrices 
-            Q = 100*eye(nx);
-            R = eye(nu);
+            Q = eye(nx);
+            R = 0.01*eye(nu);
             
             % Define U constraints for (both with vectors and scalars)
             P_diff_lim = 20;

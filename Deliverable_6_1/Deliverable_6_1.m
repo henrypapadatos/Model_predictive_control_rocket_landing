@@ -1,10 +1,11 @@
 addpath(fullfile('..', 'src'));
 
+
 %% TODO: This file should produce all the plots for the deliverable
 
 Ts = 1/10; % Note that we choose a larger Ts here to speed up the simulation
 rocket = Rocket(Ts);
-H = 2.5;
+H = 0.6;
 nmpc = NMPC_Control(rocket, H);
 
 % MPC reference with default maximum roll = 15 deg

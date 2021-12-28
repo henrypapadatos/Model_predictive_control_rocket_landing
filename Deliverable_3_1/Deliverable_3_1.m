@@ -28,7 +28,7 @@ saveas(ph.fig,"Graphs/sys_x_results.svg");
 %% 2nd system (sys_y [wx alpha vy y]): Initialize the controller
 
 % Choose the horizon length
-H = 1.2;
+H = 1.1;
 % Initialize the controller
 mpc_y = MPC_Control_y(sys_y, Ts, H);
 

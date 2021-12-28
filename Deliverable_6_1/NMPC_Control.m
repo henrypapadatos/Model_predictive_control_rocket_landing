@@ -15,48 +15,88 @@ U_sym = opti.variable(nu, N-1);   % control trajectory)
 x0_sym  = opti.parameter(nx, 1);  % initial state
 ref_sym = opti.parameter(4, 1);   % target position
 
-% Slack variables 
-%epsilon_beta_1 = opti.variable(1,N);
-%epsilon_beta_2 = opti.variable(1,N);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
 
+% Define cost matrices
+Q = eye(nx);
+Q(1,1) = 20; % Minimize angular velocity about x
+Q(2,2) = 20; % Minimize angular velocity about y
+Q(3,3) = 0.01; % Minimize angular velocity about z
+Q(4,4) = 0.01; % Minimize alpha angle
+Q(5,5) = 0.01; % Minimize beta angle
+Q(6,6) = 10; % Track roll reference 
+Q(7,7) = 2; % Minimize velocity about x
+Q(8,8) = 2; % Minimize velocity about y
+Q(9,9) = 0.01; % Minimize velocity about z
+Q(10,10) = 5; % Track x reference
+Q(11,11) = 5; % Track y reference
+Q(12,12) = 5; % Track z reference
+
+% Define cost matrix for the input
+R = [0.00001 0 0 0; % Minimize delta 1
+     0 0.00001 0 0; % Minimize delta 2
+     0 0 0.05 0; % Minimize P_avg
+     0 0 0 0.05]; % Minimize P_diff
+
+% Linearize the system to compute terminal cost
+
+X0 = SX.sym('X0',nx,1); % declare a symbolic variable X0 of size nxx1
+U0 = SX.sym('U0',nu,1); % declare a symbolic variable U0 of size nux1
+
+x_next = rocket.f(X0,U0); % Calculate the next step symbolically
+
+A_jac = jacobian(x_next,X0); % returns jacobian for an expression (x_next) with respect to X0
+B_jac = jacobian(x_next,U0); % returns jacobian for an expression (x_dot) with respect to U0
+
+% convert A_algorithmic, B_algorithmic expressions to a callable functions
+A_algorithmic = casadi.Function('A_algorithmic',{X0,U0},{A_jac});
+B_algorithmic = casadi.Function('A_algorithmic',{X0,U0},{B_jac});
+
+% Equilibrum point around which the system will be linearized
+xs = zeros(nx,1);
+us = [0 0 56.6667 0]';
+
+% Discretize the system
+A = eye(nx) + rocket.Ts*full(A_algorithmic(xs,us));
+B = rocket.Ts*full(B_algorithmic(xs,us));
+
+% Compute the terminal cost matrix
+[~,P,~] = dlqr(A,B,Q,R);
+
+% Define the target tracked by the rocket
+x_target = [0 0 0 0 0 ref_sym(4) 0 0 0 ref_sym(1:3)']';
+u_target = [0 0 56.6667 0]';
+
+% Define the matrices for the augmented system
+Q_aug = blkdiag(kron(eye(N-1),Q),P);
+R_aug = kron(eye(N-1),R);
+
+% Discretize f
 f_discrete = @(x,u) RK4(x,u,rocket.Ts,@rocket.f);
 
-opti.minimize(...
-    5*sum((X_sym(10,:)-ref_sym(1)).^2) +... % Track x reference
-    5*sum((X_sym(11,:)-ref_sym(2)).^2) +... % Track y reference
-    5*sum((X_sym(12,:)-ref_sym(3)).^2) +... % Track z reference
-    40*sum((X_sym(6,:)-ref_sym(4)).^2) +... % Track roll reference
-    30*sum(X_sym(1,:).^2) +... % Minimize angular velocity about x
-    60*sum(X_sym(2,:).^2) +... % Minimize angular velocity about y
-    0*sum(X_sym(3,:).^2) +... % Minimize angular velocity about z
-    0*sum(X_sym(7,:).^2) +... % Minimize velocity along x
-    0*sum(X_sym(8,:).^2) +... % Minimize velocity along y
-    0*sum(X_sym(9,:).^2) +... % Minimize velocity along z
-    0.02*sum((U_sym(3,:) - 60).^2) + ... % Minimize the energy used 
-    0.25*sum(U_sym(4,:).^2)... % Minimize P_diff
-    );
+% Define the optimization problem
+opti.minimize((reshape(X_sym - x_target,nx*N,1)')*Q_aug*reshape(X_sym - x_target,nx*N,1)+...
+              (reshape(U_sym - u_target,nu*(N-1),1)')*R_aug*reshape(U_sym - u_target,nu*(N-1),1)...
+              );
 
-%    epsilon_beta_1*epsilon_beta_1' + sum(epsilon_beta_1) +... % Slack constraints
-%    epsilon_beta_2*epsilon_beta_2' + sum(epsilon_beta_2));
+% Define the constraints 
 
-
+% Dynamic constraints 
 for k=1:N-1 % loop over control intervals
     opti.subject_to(X_sym(:,k+1) == f_discrete(X_sym(:,k), U_sym(:,k)));
 end
 
-%input constraints
+% Input constraints
 opti.subject_to(-0.26 <= U_sym(1) <= 0.26);
 opti.subject_to(-0.26 <= U_sym(2) <= 0.26);
 opti.subject_to(50 <= U_sym(3) <= 80);
 opti.subject_to(-20 <= U_sym(4) <= 20);
 
-%state constraints
+% State constraints
 opti.subject_to(-deg2rad(85) <= X_sym(5) <= deg2rad(85));
 
-%initialize state
+% Initial state constraints
 opti.subject_to(X_sym(:,1) == x0_sym);
 
 % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

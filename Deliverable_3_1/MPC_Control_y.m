@@ -33,7 +33,7 @@ classdef MPC_Control_y < MPC_Control
             
             % Define Q and R matrices 
             Q = eye(nx);
-            Q(1,1) = 60;
+            Q(1,1) = 80;
             R = 0.1*eye(nu);
             
             % Define constraints for x (both with vectors and scalars)
