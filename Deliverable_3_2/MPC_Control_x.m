@@ -33,8 +33,11 @@ classdef MPC_Control_x < MPC_Control
             
             % Define Q and R matrices 
             Q = eye(nx);
-            Q(1,1) = Q(1,1) *20;
+            Q(1,1) = 17;
+            Q(4,4) = 1.2;
+            
             R = eye(nu);
+            R(1,1) = 1;
             
             % Define constraints for x (both with vectors and scalars)
             alpha_lim = 0.0873;
