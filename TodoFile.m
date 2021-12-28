@@ -222,13 +222,13 @@ ph = rocket.plotvis_sub(T, roll_sub, U_sub, sys_roll, xs, us);
 rmpath("Deliverable_3_1")
 addpath("Deliverable_3_2")
 
-Ts = 1/40; % Sample time
+Ts = 1/20; % Sample time
 rocket = Rocket(Ts);
 [xs, us] = rocket.trim();
 sys = rocket.linearize(xs, us);
 [sys_x, sys_y, sys_z, sys_roll] = rocket.decompose(sys, xs, us);
 % Design MPC controller
-H = 5; % Horizon length in seconds
+H = 3; % Horizon length in seconds
 
 
 % Merge four sub−system controllers into one full−system controller
@@ -246,7 +246,7 @@ x0 = zeros(12,1);
 %rocket.mass = 1.783;
 [T, X, U, Ref] = rocket.simulate_f(x0, Tf, mpc, ref);
 % Plot pose
-rocket.anim_rate = 2; % Increase this to make the animation faster
+rocket.anim_rate = 4; % Increase this to make the animation faster
                       % anim rate = 4 is about right for printing in the report
 ph = rocket.plotvis(T, X, U, Ref);
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
