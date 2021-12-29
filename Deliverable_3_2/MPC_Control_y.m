@@ -24,6 +24,7 @@ classdef MPC_Control_y < MPC_Control
             % Predicted state and input trajectories
             X = sdpvar(nx, N);
             U = sdpvar(nu, N-1);
+            epsilon = sdpvar(2,N-1);
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
@@ -33,10 +34,15 @@ classdef MPC_Control_y < MPC_Control
             
             % Define Q and R matrices 
             Q = eye(nx);
-            Q(1,1) = 17;
-            Q(4,4) = 1.5;
+            Q(1,1) = 100;
+            Q(2,2) = 1;
+            Q(3,3) = 1;
+            Q(4,4) = 80;
+            
             R = eye(nu);
             R(1,1) = 1;
+            
+            S = 100000;
             
             % Define constraints for x (both with vectors and scalars)
             alpha_lim = 0.0873;
@@ -57,14 +63,17 @@ classdef MPC_Control_y < MPC_Control
             
             for i=1:N-1
                 % Discrete Time model constraint
-                con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)];
+                con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))];
                 % Constraints on U
                 con = [con, M*U(:,i) <= m];
                 % Constraints on X
-                con = [con, H*X(:,i) <= h];
+                con = [con, H*X(:,i) - epsilon(:,i) <= h];
+
                 % Increment the objective function: we want to minimize
                 % x-x_ref and u-u_ref
-                obj = obj + (X(:,i) - x_ref)'*Q*(X(:,i) - x_ref) + (U(:,i) - u_ref)'*R*(U(:,i) - u_ref); 
+                obj = obj + (X(:,i) - x_ref)'*Q*(X(:,i) - x_ref) + (U(:,i) - u_ref)'*R*(U(:,i) - u_ref);
+                
+                obj = obj + epsilon(:,i)' * S *epsilon(:,i);
             end
             
             % Increment the objective function with the final cost
