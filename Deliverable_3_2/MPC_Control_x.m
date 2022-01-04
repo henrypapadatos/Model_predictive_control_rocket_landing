@@ -42,7 +42,8 @@ classdef MPC_Control_x < MPC_Control
             R = eye(nu);
             R(1,1) = 1;
             
-            S = 100000;
+            % Quadratic cost of sof constraints
+            S = 1.e6;
             
             % Define constraints for x (both with vectors and scalars)
             alpha_lim = 0.0873;
@@ -60,9 +61,6 @@ classdef MPC_Control_x < MPC_Control
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
-            % change this, check serie
-            X(:,1) = X(:,1);
-            
             for i=1:N-1
                 % Discrete Time model constraint
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))];
@@ -72,12 +70,13 @@ classdef MPC_Control_x < MPC_Control
                 con = [con, H*X(:,i) - epsilon(:,i) <= h];
 
                 % Increment the objective function: we want to minimize
-                % x-x_ref and u-u_ref
+                % We want to minimize Delta X and Delta U as we do offset
+                % tracking
                 obj = obj + (X(:,i) - x_ref)'*Q*(X(:,i) - x_ref) + (U(:,i) - u_ref)'*R*(U(:,i) - u_ref);
-                
+                % Minimize soft constraint violation
                 obj = obj + epsilon(:,i)' * S *epsilon(:,i);
             end
-%           Increment the objective function with the final cost
+            % Increment the objective function with the final cost
             obj = obj + (X(:,i) - x_ref)'*P*(X(:,i) - x_ref);
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

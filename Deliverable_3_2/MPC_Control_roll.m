@@ -61,6 +61,8 @@ classdef MPC_Control_roll < MPC_Control
                 % Constraints on U
                 con = [con, M*U(:,i) <= m];
                 % Increment the objective function
+                % We want to minimize Delta X and Delta U as we do offset
+                % tracking
                 obj = obj + (X(:,i) - x_ref)'*Q*(X(:,i) - x_ref) + (U(:,i) - u_ref)'*R*(U(:,i) - u_ref); 
             end
 %           Increment the objective function with the final cost
