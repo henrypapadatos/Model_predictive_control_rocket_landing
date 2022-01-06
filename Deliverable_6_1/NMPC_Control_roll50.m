@@ -20,24 +20,24 @@ ref_sym = opti.parameter(4, 1);   % target position
 
 % Define cost matrices
 Q = eye(nx);
-Q(1,1) = 20; % Minimize angular velocity about x
-Q(2,2) = 20; % Minimize angular velocity about y
-Q(3,3) = 0.01; % Minimize angular velocity about z
-Q(4,4) = 0.01; % Minimize alpha angle
-Q(5,5) = 0.01; % Minimize beta angle
-Q(6,6) = 10; % Track roll reference 
-Q(7,7) = 2; % Minimize velocity about x
-Q(8,8) = 2; % Minimize velocity about y
-Q(9,9) = 0.01; % Minimize velocity about z
-Q(10,10) = 5; % Track x reference
-Q(11,11) = 5; % Track y reference
-Q(12,12) = 5; % Track z reference
+Q(1,1) = 200; % Minimize angular velocity about x
+Q(2,2) = 600; % Minimize angular velocity about y
+Q(3,3) = 100; % Minimize angular velocity about z
+Q(4,4) = 1; % Minimize alpha angle
+Q(5,5) = 1; % Minimize beta angle
+Q(6,6) = 400; % Track roll reference 
+Q(7,7) = 1; % Minimize velocity about x
+Q(8,8) = 1; % Minimize velocity about y
+Q(9,9) = 1; % Minimize velocity about z
+Q(10,10) = 1000; % Track x reference
+Q(11,11) = 1000; % Track y reference
+Q(12,12) = 500; % Track z reference
 
 % Define cost matrix for the input
-R = [0.00001 0 0 0; % Minimize delta 1
-     0 0.00001 0 0; % Minimize delta 2
-     0 0 0.05 0; % Minimize P_avg
-     0 0 0 0.05]; % Minimize P_diff
+R = [1000 0 0 0; % Minimize delta 1
+     0 1000 0 0; % Minimize delta 2
+     0 0 2 0; % Minimize P_avg
+     0 0 0 1]; % Minimize P_diff
 
 % Linearize the system to compute terminal cost
 
