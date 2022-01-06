@@ -42,7 +42,8 @@ classdef MPC_Control_y < MPC_Control
             R = eye(nu);
             R(1,1) = 1;
             
-            S = 100000;
+            % Quadratic cost of sof constraints
+            S = 1.e6;
             
             % Define constraints for x (both with vectors and scalars)
             alpha_lim = 0.0873;
@@ -70,9 +71,10 @@ classdef MPC_Control_y < MPC_Control
                 con = [con, H*X(:,i) - epsilon(:,i) <= h];
 
                 % Increment the objective function: we want to minimize
-                % x-x_ref and u-u_ref
+                % We want to minimize Delta X and Delta U as we do offset
+                % tracking
                 obj = obj + (X(:,i) - x_ref)'*Q*(X(:,i) - x_ref) + (U(:,i) - u_ref)'*R*(U(:,i) - u_ref);
-                
+                % Minimize soft constraint violation
                 obj = obj + epsilon(:,i)' * S *epsilon(:,i);
             end
             

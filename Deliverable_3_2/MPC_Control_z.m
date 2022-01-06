@@ -52,7 +52,7 @@ classdef MPC_Control_z < MPC_Control
             R = eye(nu);
             
             % Define U constraints for (both with vectors and scalars)
-            uss = 56.6667;
+            uss = 56.6667; % Hard coded value of u steady state
             P_avg_lim_low = 50 - uss;
             P_avg_lim_high = 80 - uss;
             M = [1;-1];
@@ -71,6 +71,8 @@ classdef MPC_Control_z < MPC_Control
                 % Constraints on U
                 con = [con, M*U(:,i) <= m];
                 % Increment the objective function
+                % We want to minimize Delta X and Delta U as we do offset
+                % tracking
                 obj = obj + (X(:,i) - x_ref)'*Q*(X(:,i) - x_ref) + (U(:,i) - u_ref)'*R*(U(:,i) - u_ref); 
             end
             
