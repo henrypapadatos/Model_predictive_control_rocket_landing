@@ -20,9 +20,9 @@ ref_sym = opti.parameter(4, 1);   % target position
 
 % Define cost matrices
 Q = eye(nx);
-Q(1,1) = 200; % Minimize angular velocity about x
-Q(2,2) = 600; % Minimize angular velocity about y
-Q(3,3) = 100; % Minimize angular velocity about z
+Q(1,1) = 600; % Minimize angular velocity about x
+Q(2,2) = 1100; % Minimize angular velocity about y
+Q(3,3) = 50; % Minimize angular velocity about z
 Q(4,4) = 1; % Minimize alpha angle
 Q(5,5) = 1; % Minimize beta angle
 Q(6,6) = 400; % Track roll reference 
@@ -31,13 +31,13 @@ Q(8,8) = 1; % Minimize velocity about y
 Q(9,9) = 1; % Minimize velocity about z
 Q(10,10) = 1000; % Track x reference
 Q(11,11) = 1000; % Track y reference
-Q(12,12) = 500; % Track z reference
+Q(12,12) = 1000; % Track z reference
 
 % Define cost matrix for the input
-R = [1000 0 0 0; % Minimize delta 1
-     0 1000 0 0; % Minimize delta 2
-     0 0 2 0; % Minimize P_avg
-     0 0 0 1]; % Minimize P_diff
+R = [1 0 0 0; % Minimize delta 1
+     0 1 0 0; % Minimize delta 2
+     0 0 5 0; % Minimize P_avg
+     0 0 0 0.5]; % Minimize P_diff
 
 % Linearize the system to compute terminal cost
 
@@ -46,16 +46,16 @@ U0 = SX.sym('U0',nu,1); % declare a symbolic variable U0 of size nux1
 
 x_next = rocket.f(X0,U0); % Calculate the next step symbolically
 
-A_jac = jacobian(x_next,X0); % returns jacobian for an expression (x_next) with respect to X0
-B_jac = jacobian(x_next,U0); % returns jacobian for an expression (x_dot) with respect to U0
+A_jac = jacobian(x_next,X0); % returns jacobian for an expression (x_next) w.r.t X0
+B_jac = jacobian(x_next,U0); % returns jacobian for an expression (x_dot) w.r.t U0
 
 % convert A_algorithmic, B_algorithmic expressions to a callable functions
+% that will return jacobian w.r.t x and w.r.t. u
 A_algorithmic = casadi.Function('A_algorithmic',{X0,U0},{A_jac});
 B_algorithmic = casadi.Function('A_algorithmic',{X0,U0},{B_jac});
 
 % Equilibrum point around which the system will be linearized
-xs = zeros(nx,1);
-us = [0 0 56.6667 0]';
+[xs, us] = rocket.trim();
 
 % Discretize the system
 A = eye(nx) + rocket.Ts*full(A_algorithmic(xs,us));
@@ -66,7 +66,7 @@ B = rocket.Ts*full(B_algorithmic(xs,us));
 
 % Define the target tracked by the rocket
 x_target = [0 0 0 0 0 ref_sym(4) 0 0 0 ref_sym(1:3)']';
-u_target = [0 0 56.6667 0]';
+u_target = us;
 
 % Define the matrices for the augmented system
 Q_aug = blkdiag(kron(eye(N-1),Q),P);

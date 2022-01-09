@@ -6,6 +6,7 @@ addpath('./src')
 %% Gather all the Todo steps of the project
 
 %% Todo 1.1
+
 d1 = 0;
 d2 = 0;
 Pavg = 0;
