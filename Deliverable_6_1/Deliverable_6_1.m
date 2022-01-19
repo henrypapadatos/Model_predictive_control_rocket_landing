@@ -17,7 +17,7 @@ ref = @(t_, x_) rocket.MPC_ref(t_, Tf);
 x0 = zeros(12,1);
 [T, X, U, Ref] = rocket.simulate_f(x0, Tf, nmpc, ref);
 
-rocket.anim_rate = 4; % Increase this to make the animation faster
+rocket.anim_rate = 10; % Increase this to make the animation faster
                       % anim rate = 4 is about right for printing in the report
 ph = rocket.plotvis(T, X, U, Ref);
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
@@ -34,8 +34,24 @@ ref = @(t_, x_) rocket.MPC_ref(t_, Tf, roll_max);
 x0 = zeros(12,1);
 [T, X, U, Ref] = rocket.simulate_f(x0, Tf, nmpc, ref);
 
-rocket.anim_rate = 4; % Increase this to make the animation faster
+rocket.anim_rate = 10; % Increase this to make the animation faster
                       % anim rate = 4 is about right for printing in the report
 ph = rocket.plotvis(T, X, U, Ref);
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
 saveas(ph.fig,"Graphs/nmpc_50_roll.svg");
+
+%% Non linear function 
+
+% Define the controller
+nmpc = Non_linear_NMPC_Control_roll15(rocket, H);
+
+% MPC reference with default maximum roll = 15 deg
+ref = @(t_, x_) rocket.MPC_ref(t_, Tf);
+x0 = zeros(12,1);
+[T, X, U, Ref] = rocket.simulate_f(x0, Tf, nmpc, ref);
+
+rocket.anim_rate = 10; % Increase this to make the animation faster
+                      % anim rate = 4 is about right for printing in the report
+ph = rocket.plotvis(T, X, U, Ref);
+ph.fig.Name = 'Nonlin. sim'; % Set a figure title
+saveas(ph.fig,"Graphs/non_linear_nmpc_15_roll.svg");

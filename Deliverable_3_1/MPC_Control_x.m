@@ -34,7 +34,7 @@ classdef MPC_Control_x < MPC_Control
             % Define Q and R matrices 
             Q = eye(nx);
             Q(1,1) = 80;
-            R = 0.1*eye(nu);
+            R = eye(nu);
             
             % Define constraints for x
             beta_lim = 0.0873;

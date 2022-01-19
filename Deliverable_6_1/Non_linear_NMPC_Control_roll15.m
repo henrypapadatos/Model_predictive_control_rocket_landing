@@ -29,9 +29,9 @@ Q(6,6) = 1000; % Track roll reference
 Q(7,7) = 1; % Minimize velocity about x
 Q(8,8) = 1; % Minimize velocity about y
 Q(9,9) = 1; % Minimize velocity about z
-Q(10,10) = 1000; % Track x reference
-Q(11,11) = 1000; % Track y reference
-Q(12,12) = 1000; % Track z reference
+Q(10,10) = 500; % Track x reference
+Q(11,11) = 500; % Track y reference
+Q(12,12) = 500; % Track z reference
 
 % Define cost matrix for the input
 R = [1 0 0 0; % Minimize delta 1
@@ -77,7 +77,10 @@ f_discrete = @(x,u) RK4(x,u,rocket.Ts,@rocket.f);
 
 % Define the optimization problem
 opti.minimize((reshape(X_sym - x_target,nx*N,1)')*Q_aug*reshape(X_sym - x_target,nx*N,1)+...
-              (reshape(U_sym - u_target,nu*(N-1),1)')*R_aug*reshape(U_sym - u_target,nu*(N-1),1)...
+              (reshape(U_sym - u_target,nu*(N-1),1)')*R_aug*reshape(U_sym - u_target,nu*(N-1),1)+...
+              0.01*abs(X_sym(10,:) - x_target(10)).sum()+...
+              0.01*abs(X_sym(11,:) - x_target(11)).sum()+...
+              0.01*abs(X_sym(12,:) - x_target(12)).sum()...
               );
 
 % Define the constraints 
