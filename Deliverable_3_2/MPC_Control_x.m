@@ -32,6 +32,9 @@ classdef MPC_Control_x < MPC_Control
             % NOTE: The matrices mpc.A, mpc.B, mpc.C and mpc.D are
             %       the DISCRETE-TIME MODEL of your system
             
+            % Slack variable for soft constraints
+            epsilon = sdpvar(2,N-1);
+            
             % Define Q and R matrices 
             Q = eye(nx);
             Q(1,1) = 100;

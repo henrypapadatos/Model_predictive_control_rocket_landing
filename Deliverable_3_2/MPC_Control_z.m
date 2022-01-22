@@ -112,7 +112,10 @@ classdef MPC_Control_z < MPC_Control
             ref = sdpvar;
             
             % Disturbance estimate (Ignore this before Part 5)
-%             d_est = sdpvar;
+            % d_est = sdpvar;
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             
             % Define U constraints for (both with vectors and scalars)
             uss = 56.6667;
@@ -121,8 +124,7 @@ classdef MPC_Control_z < MPC_Control
             M = [1;-1];
             m = [P_avg_lim_high;-P_avg_lim_low];
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            
             % You can use the matrices mpc.A, mpc.B, mpc.C and mpc.D
              % Implement these constraints
             obj = us'*us;

@@ -24,13 +24,16 @@ classdef MPC_Control_y < MPC_Control
             % Predicted state and input trajectories
             X = sdpvar(nx, N);
             U = sdpvar(nu, N-1);
-            epsilon = sdpvar(2,N-1);
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             
             % NOTE: The matrices mpc.A, mpc.B, mpc.C and mpc.D are
             %       the DISCRETE-TIME MODEL of your system
+            
+            
+            % Slack variable for soft constraints
+            epsilon = sdpvar(2,N-1);
             
             % Define Q and R matrices 
             Q = eye(nx);

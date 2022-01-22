@@ -46,11 +46,6 @@ classdef MPC_Control_roll < MPC_Control
             % Compute LQR invariant set and final cost
             [~,P,~] = dlqr(mpc.A,mpc.B,Q,R);
 
-            % Question to ask to TA
-            % X_lqr = Polyhedron([H; M*K],[h; m]);
-            
-%             plot_invset(X_f,"Maximum invariant set for the 'sys roll' system");
-            
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
