@@ -26,10 +26,10 @@ mpc = rocket.merge_lin_controllers(xs, us, mpc_x, mpc_y, mpc_z, mpc_roll);
 Tf = 30;
 ref = @(t_, x_) rocket.MPC_ref(t_, Tf);
 x0 = zeros(12,1);
-%rocket.mass = 1.783;
+
 [T, X, U, Ref] = rocket.simulate_f(x0, Tf, mpc, ref);
+
 % Plot pose
 rocket.anim_rate = 10; % Increase this to make the animation faster
-                      % anim rate = 4 is about right for printing in the report
 ph = rocket.plotvis(T, X, U, Ref);
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
