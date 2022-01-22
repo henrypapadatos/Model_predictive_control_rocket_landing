@@ -75,7 +75,7 @@ classdef MPC_Control_z < MPC_Control
             con = [];
             
             for i=1:N-1
-                % Discrete Time model constraint
+                % Discrete Time model constraint, taking into account the disturbance
                 con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)+ mpc.B*d_est];
                 % Constraints on U
                 con = [con, M*U(:,i) <= m];
@@ -126,7 +126,7 @@ classdef MPC_Control_z < MPC_Control
             % You can use the matrices mpc.A, mpc.B, mpc.C and mpc.D
             % Implement these constraints
             obj = us'*us;
-            % Steady state constraints
+            % Steady state constraints, taking into account the disturbance
             con = [mpc.A*xs + mpc.B*us + mpc.B*d_est == xs];
             % Reference constraints
             con = [con, mpc.C*xs + mpc.D*us == ref];
@@ -155,24 +155,16 @@ classdef MPC_Control_z < MPC_Control
             [nx, nu] = size(mpc.B);
             ny   = size(mpc.C,1);
             
+            %Building the A_bar, B_bar and C_bar matrices
             A_bar = [mpc.A     , mpc.B;
                     zeros(1,nx),1           ];
-            disp("size of A bar");
-            disp(size(A_bar));
 
             B_bar = [mpc.B;zeros(1,nu)];
             C_bar = [mpc.C,zeros(ny,1)];
-            disp(A_bar);
-            disp(B_bar);
-            disp(C_bar);
             
-            %how to define de poles?
+            %Placing of the poles for the closed loop controller: ( A_bar + L*C_bar )
             L = -place(A_bar',C_bar',[0.4,0.3,0.5])';
-            
-%             x_bar = [ x_hat; disturbance_hat ];
-%             
-%             x_bar_next = A_bar * x_bar + B_bar * u + L * (C_bar * x_bar - y)
-            
+
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end

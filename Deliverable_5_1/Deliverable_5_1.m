@@ -1,54 +1,34 @@
 addpath(fullfile('..', 'src'));
 %%
-d1 = 0;
-d2 = 0;
-%  Pavg = (P1 + P2)/2, limited to [20%, 80%]
-Pavg = 0;
-%Pdiff = P2 − P1, Pdiff might be up to ±20%
-Pdiff = 0;
-w = [0 0 0];
-phi = [0 0 0];
-v = [0 0 0];
-p = [0 0 0];
-
-Ts = 1/20;
-rocket = Rocket(Ts);
-u = [d1, d2, Pavg, Pdiff]'; % (Assign appropriately)
-[b_F, b_M] = rocket.getForceAndMomentFromThrust(u)
-x = [w, phi, v, p]'; % (Assign appropriately)
-%derivee de x
-x_dot = rocket.f(x, u)
-
-rocket = Rocket(Ts);
-Tf = 2.0; % Time to simulate for
-x0 = [deg2rad([2 -2 0, -2 2 0]), 0 0 0, 0 0 0]'; % (w, phi, v, p) Initial state
-u = [deg2rad([2 0]), 60, 0 ]'; % (d1 d2 Pavg Pdiff) Constant input
-[T, X, U] = rocket.simulate_f(x0, Tf, u); % Simulate nonlinear dynamics f
-rocket.anim_rate = 1.0;
-rocket.vis(T, X, U); 
-%%
-%%TO DO 5
-
-Ts = 1/20; %Sample time
+Ts = 1/20; % Sample time
 rocket = Rocket(Ts);
 [xs, us] = rocket.trim();
 sys = rocket.linearize(xs, us);
 [sys_x, sys_y, sys_z, sys_roll] = rocket.decompose(sys, xs, us);
+
 % Design MPC controller
-H = 5; % Horizon length in seconds
+H = 1.5; % Horizon length in seconds
 
+% Merge four sub−system controllers into one full−system controller
+mpc_x = MPC_Control_x(sys_x, Ts, H);
+mpc_y = MPC_Control_y(sys_y, Ts, H);
 mpc_z = MPC_Control_z(sys_z, Ts, H);
+mpc_roll = MPC_Control_roll(sys_roll, Ts, H);
 
-rocket.mass = 1.783; % Manipulate mass for simulation
-z_ref=1;
-z = [0;0];
+mpc = rocket.merge_lin_controllers(xs, us, mpc_x, mpc_y, mpc_z, mpc_roll);
 
-% Get control input
-uz = mpc_z.get_u(z,z_ref);
+% Setup reference function
+Tf = 30;
+ref = @(t_, x_) rocket.MPC_ref(t_, Tf);
+%ref = @(t_, x_) [0;0;t_;0];
+x0 = zeros(12,1);
 
-Tf = 10;
-z0 = [0;0];
-[T, Z_sub, U_sub] = rocket.simulate(sys_z, z0, Tf, @mpc_z.get_u, z_ref);
+% Manipulate mass for simulation
+%normal mass: 1.7 % 1.783
+rocket.mass =  1.783;
 %[T, X, U, Ref] = rocket.simulate_f(x0, Tf, mpc, ref);
-
-
+[T, X, U, Ref, Z_hat] = rocket.simulate_f_est_z(x0, Tf, mpc, ref, mpc_z, sys_z);
+rocket.anim_rate = 10; % Increase this to make the animation faster
+                       % anim rate = 4 is about right for printing in the report
+ph = rocket.plotvis(T, X, U, Ref);
+ph.fig.Name = 'Nonlin. sim'; % Set a figure title
