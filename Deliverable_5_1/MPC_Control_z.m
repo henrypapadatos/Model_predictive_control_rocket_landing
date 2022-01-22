@@ -1,13 +1,5 @@
 classdef MPC_Control_z < MPC_Control
-    % the d only makes a difference in the constraints of the optimizer and
-    % of the sst target.
-    % how to set the poles of the new close loop system? because I'm
-    % getting an error.
-    % where is the d_estimate0 set? in rocket?
-    %should I write my observer in here or only the set up of the matrices?
-    %I can only test it by testing the whole system?
-    %is the B matrix infront of d in the system important
-    
+
     properties
         A_bar, B_bar, C_bar % Augmented system for disturbance rejection
         L                   % Estimator gain for disturbance rejection

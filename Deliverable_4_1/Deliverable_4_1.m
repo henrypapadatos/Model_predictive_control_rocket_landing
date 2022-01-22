@@ -1,4 +1,4 @@
-% clc; clear all; close all;
+clc; clear all; close all;
 addpath(fullfile('..', 'src'));
 addpath(fullfile('..', "Deliverable_3_2"))
 
