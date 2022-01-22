@@ -1,3 +1,4 @@
+clc; clear all; close all;
 addpath(fullfile('..', 'src'));
 
 %% Set the parameters of the simulations
@@ -40,7 +41,7 @@ ph = rocket.plotvis(T, X, U, Ref);
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
 saveas(ph.fig,"Graphs/nmpc_50_roll.svg");
 
-%% Non linear function 
+%% Non linear cost function - 15° for the roll
 
 % Define the controller
 nmpc = Non_linear_NMPC_Control_roll15(rocket, H);
