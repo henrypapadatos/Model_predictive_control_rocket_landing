@@ -25,7 +25,7 @@ ref = @(t_, x_) rocket.MPC_ref(t_, Tf);
 x0 = zeros(12,1);
 
 % Manipulate mass for simulation
-rocket.mass =  1.783;
+rocket.mass =  1.783; 
 
 %% Run the simulation with controller from deliverable 4
 [T, X, U, Ref] = rocket.simulate_f(x0, Tf, mpc, ref);
