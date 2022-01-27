@@ -33,8 +33,12 @@ rocket.anim_rate = 10; % Increase this to make the animation faster
 ph = rocket.plotvis(T, X, U, Ref);
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
 
+saveas(ph.fig,"Graphs/offset mass + old model.svg");
+
 %% Updated controller with offset free tracking
 [T, X, U, Ref, Z_hat] = rocket.simulate_f_est_z(x0, Tf, mpc, ref, mpc_z, sys_z);
 rocket.anim_rate = 10; % Increase this to make the animation faster
 ph = rocket.plotvis(T, X, U, Ref);
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
+
+saveas(ph.fig,"Graphs/offset mass + new model.svg");

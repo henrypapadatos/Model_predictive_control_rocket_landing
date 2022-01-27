@@ -24,7 +24,7 @@ classdef MPC_Control_x < MPC_Control
             % Predicted state and input trajectories
             X = sdpvar(nx, N);
             U = sdpvar(nu, N-1);
-            epsilon = sdpvar(2,N-1);
+            epsilon = sdpvar(2,N);
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
@@ -77,7 +77,8 @@ classdef MPC_Control_x < MPC_Control
                 obj = obj + epsilon(:,i)' * S *epsilon(:,i);
             end
             % Increment the objective function with the final cost
-            obj = obj + (X(:,i) - x_ref)'*P*(X(:,i) - x_ref);
+            obj = obj + (X(:,N) - x_ref)'*P*(X(:,N) - x_ref);
+            con = [con, H*X(:,N) - epsilon(:,N) <= h];
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
