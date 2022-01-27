@@ -44,7 +44,7 @@ saveas(ph.fig,"Graphs/nmpc_50_roll.svg");
 %% Non linear cost function - 15° for the roll
 
 % Define the controller
-nmpc = Non_linear_NMPC_Control_roll15(rocket, H);
+nmpc = NMPC_Control_roll15_abs_cost(rocket, H);
 
 % MPC reference with default maximum roll = 15 deg
 ref = @(t_, x_) rocket.MPC_ref(t_, Tf);

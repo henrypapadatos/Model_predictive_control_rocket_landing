@@ -82,7 +82,7 @@ classdef MPC_Control_y < MPC_Control
             end
             
             % Increment the objective function with the final cost
-            obj = obj + (X(:,i) - x_ref)'*P*(X(:,i) - x_ref);   
+            obj = obj + (X(:,N) - x_ref)'*P*(X(:,N) - x_ref);   
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

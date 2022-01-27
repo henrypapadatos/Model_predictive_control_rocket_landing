@@ -22,6 +22,8 @@ x0 = [0;0;0;0]; % Starts at origin
 [T, X_sub, U_sub] = rocket.simulate(sys_x, x0, Tf, @mpc_x.get_u, x_ref);
 ph = rocket.plotvis_sub(T, X_sub, U_sub, sys_x, xs, us, x_ref);
 
+saveas(ph.fig,"Graphs/x.svg");
+
 %% MPC_Control_y
 
 % Initialize the controller
@@ -34,6 +36,7 @@ y0 = [0;0;0;0]; % Starts at origin
 [T, Y_sub, U_sub] = rocket.simulate(sys_y, y0, Tf, @mpc_y.get_u, y_ref);
 ph = rocket.plotvis_sub(T, Y_sub, U_sub, sys_y, xs, us, y_ref);
 
+saveas(ph.fig,"Graphs/y.svg");
 %% MPC_Control_z
 
 % Initialize the controller
@@ -46,6 +49,8 @@ z0 = [0;0]; % Starts at origin
 [T, Z_sub, U_sub] = rocket.simulate(sys_z, z0, Tf, @mpc_z.get_u, z_ref);
 ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
 
+saveas(ph.fig,"Graphs/z.svg");
+
 %% MPC_Control_roll
 
 % Initialize the controller
@@ -57,3 +62,5 @@ roll0 = [0;0]; % Starts at origin
 
 [T, roll_sub, U_sub] = rocket.simulate(sys_roll, roll0, Tf, @mpc_roll.get_u, roll_ref);
 ph = rocket.plotvis_sub(T, roll_sub, U_sub, sys_roll, xs, us);
+
+saveas(ph.fig,"Graphs/gamma.svg");

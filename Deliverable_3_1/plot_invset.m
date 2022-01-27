@@ -18,15 +18,29 @@ nx = size(F,2);
 fig = figure();
 fig.Position = [100 100 1200 600];
 sgtitle(title);
+colors = ['r','g','b','c','m','y','k','w'];
 
+if (nx == 4)
+    cols = 3;
+    rows = 2;
+else
+    cols = 1;
+    rows = 1;
+end 
+
+graph = 1;
 % Loop over the dimensions 
 for dim1=1:nx-1
-    subplot(1,nx-1,dim1)
-    hold on
-    % Plot the invariant set
-    X_f.projection(dim1:dim1+1).plot("alpha",0.1,"color",'g');
-    xlabel(state_names(dim1))
-    ylabel(state_names(dim1+1))
+    for dim2=dim1+1:nx
+        subplot(rows,cols,graph)
+        hold on
+        color = colors(rem(graph,length(colors)) + 1);
+        % Plot the invariant set
+        X_f.projection([dim1,dim2]).plot("alpha",0.4,"color",color);
+        xlabel(state_names(dim1))
+        ylabel(state_names(dim2))
+        graph = graph + 1;
+    end
 end
 
 % Eventually save the figure 
