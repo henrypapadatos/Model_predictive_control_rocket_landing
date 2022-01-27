@@ -20,6 +20,7 @@ fig.Position = [100 100 1200 600];
 sgtitle(title);
 colors = ['r','g','b','c','m','y','k','w'];
 
+% Hardcode here as we know the config of the states
 if (nx == 4)
     cols = 3;
     rows = 2;
@@ -28,9 +29,11 @@ else
     rows = 1;
 end 
 
+% Graph counter
 graph = 1;
 % Loop over the dimensions 
 for dim1=1:nx-1
+    % Avoid duplicated graphs
     for dim2=dim1+1:nx
         subplot(rows,cols,graph)
         hold on
@@ -39,6 +42,7 @@ for dim1=1:nx-1
         X_f.projection([dim1,dim2]).plot("alpha",0.4,"color",color);
         xlabel(state_names(dim1))
         ylabel(state_names(dim2))
+        % Increment graph counter
         graph = graph + 1;
     end
 end
