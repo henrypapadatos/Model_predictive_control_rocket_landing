@@ -33,3 +33,5 @@ x0 = zeros(12,1);
 rocket.anim_rate = 10; % Increase this to make the animation faster
 ph = rocket.plotvis(T, X, U, Ref);
 ph.fig.Name = 'Nonlin. sim'; % Set a figure title
+
+saveas(ph.fig,"Graphs/MPC.svg");
