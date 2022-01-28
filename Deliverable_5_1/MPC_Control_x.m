@@ -46,9 +46,9 @@ classdef MPC_Control_x < MPC_Control
             S = 1.e6;
             
             % Define constraints for x (both with vectors and scalars)
-            alpha_lim = 0.0873;
+            beta_lim = 0.0873;
             H = [0 1 0 0; 0 -1 0 0];
-            h = [alpha_lim;alpha_lim];
+            h = [beta_lim;beta_lim];
             
             % Define constraints for u (both with vectors and scalars)
             delta_lim = 0.26;
@@ -114,9 +114,9 @@ classdef MPC_Control_x < MPC_Control
             % You can use the matrices mpc.A, mpc.B, mpc.C and mpc.D
             
             % Define constraints for x
-            alpha_lim = 0.0873;
+            beta_lim = 0.0873;
             H = [0 1 0 0; 0 -1 0 0];
-            h = [alpha_lim;alpha_lim];
+            h = [beta_lim;beta_lim];
             
             % Define constraints for u
             delta_lim = 0.26;

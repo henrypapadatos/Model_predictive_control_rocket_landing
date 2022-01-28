@@ -1,4 +1,7 @@
 clc; clear all; close all;
+warning('off', 'MATLAB:rmpath:DirNotFound');
+rmpath(genpath("../Deliverable_3_1"));
+rmpath(genpath("../Deliverable_3_2"));
 addpath(fullfile('..', 'src'));
 
 %% Definition of controller and parameters

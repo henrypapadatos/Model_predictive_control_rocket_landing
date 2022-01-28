@@ -1,4 +1,7 @@
 clc; clear all; close all;
+warning('off', 'MATLAB:rmpath:DirNotFound');
+rmpath(genpath("../Deliverable_3_1"));
+rmpath(genpath("../Deliverable_5_1"));
 addpath(fullfile('..', 'src'));
 
 %% Linearize and split the system
