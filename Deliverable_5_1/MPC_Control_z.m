@@ -155,7 +155,7 @@ classdef MPC_Control_z < MPC_Control
             C_bar = [mpc.C,zeros(ny,1)];
             
             %Placing of the poles for the closed loop controller: ( A_bar + L*C_bar )
-            L = -place(A_bar',C_bar',[0.1,0.2,0.3])';
+            L = -place(A_bar',C_bar',[0.4,0.5,0.6])';
 
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

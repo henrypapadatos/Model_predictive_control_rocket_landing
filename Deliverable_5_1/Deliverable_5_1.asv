@@ -58,7 +58,6 @@ fig = figure();
 fig.Position = [100 100 1200 600];
 hold on
 plot(T,Z_hat(13,:))
-% Plot the true disturbance 
 yline(-2.76667,'--',"True disturbance");
 title("Evolution of the estimation of the disturbance, poles = [0.4,0.5,0.6]");
 xlabel("Time [s]")
@@ -67,18 +66,15 @@ saveas(fig,"Graphs/dist_estimation.svg")
 
 %% Study to see how the poles were influencing the estimation of the disturbance 
 
-% Load the workspace where we did poles study 
 load("poles_workspace.mat");
 fig = figure();
 fig.Position = [100 100 1400 800];
 hold on
-% For each pole configuration plot the curve 
 poles_1 = plot(T(1,1:120),Z_hat(13,1:120));
 poles_2 = plot(T(1,1:120),Z_hat_2(13,1:120));
 poles_3 = plot(T(1,1:120),Z_hat_3(13,1:120));
 poles_4 = plot(T(1,1:120),Z_hat_4(13,1:120));
 true_dist = yline(-2.76667,'--');
-% Legend that man ;)
 legend([poles_1,poles_2,poles_4,poles_3,true_dist],...
        ["poles = [0.01,0.02,0.03]",...
        "poles = [0.1,0.2,0.3]",...
