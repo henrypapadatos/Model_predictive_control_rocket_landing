@@ -1,18 +1,16 @@
 # Model_predictive_control_rocket_landing
-Design an MPC controller to control a rockect with controlable trust direction
+The goal of this project is to design an MPC controller to control a rocket prototype with controlable trust direction. 
 
-# Remarks report
+We first linearise the dynamics and use a linear MPS controller.
+And then we directly use a non linear MPC controller and compare the results.
 
-## Deliverable 2.1
+The final goal of the project was to track a path formed by the letters "MPC" in the air. 
 
-- Sys_z "depends only on z and vz" only if the rocket is aligned with z, i.e. not bended 
-- Sys_roll -> same
+Here is a snapchot of our tracking performances. 
 
-## Deliverable 3.1
-- I put a different horizon for each subsystem maybe put the same horizon for all subsystems as did henry in his part
-- Maybe similar cost matrices as henry, I mean it is strange to have different matrices for similar problems (actually not that similar as henry added soft contraints + no terminal set !!, we should maybe explicitly justify the difference) + terminal set !!
+![nmpc_15_roll](https://user-images.githubusercontent.com/63106608/193593029-c53f6d66-4146-4297-9c3c-0fb25f753d25.svg)
+##
+You can find the complete description of the project in the file "Project_description.pdf". And we present our results in the file "Report.pdf".
 
-
-## Deliverable 6
-
-Do we talk about non linear cost functions ??
+##
+This project was realised in the scope of the "Model predictive control" class (ME-425) thaught by Jones Colin Neil.
