@@ -1,4 +1,4 @@
-# Model_predictive_control_rocket_landing
+# Model predictive control for rocket landing
 The goal of this project is to design an MPC controller to control a rocket prototype with controlable trust direction. 
 
 We first linearise the dynamics and use a linear MPS controller.
